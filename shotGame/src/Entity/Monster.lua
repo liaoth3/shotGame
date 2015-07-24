@@ -21,30 +21,16 @@ function Monster:show()
     self:setVisible(true)
 end
 
-function Monster:shot()
-    if self._isShotting  then 
-    	for k,v in pairs(self._bullets) do
-    	    v:show()
-            local x,y = v:getPosition()
-            x = x + self._bulletSpeed
-            if x > self._range then
-                x = self._centerPoint.x / 2
-            end 
-            v:setPosition(cc.p(x,y))
-    	end  
-    	self._isShotting = true
-    else
-        for k,v in pairs(self._bullets) do
-            v:show()
-            local x,y = v:getPosition()
-            x = x + (self._range / self._bulletsAmount)*(k-1)
-            if x > self._range then
-                x = self._centerPoint.x / 2
-            end 
-            v:setPosition(cc.p(x,y))
-        end  
-        self._isShotting = true
-    end
+function Monster:shot(shoudShot)
+    local intervalWidth = self._range / self._bulletsAmount
+    for k, v in pairs(self._RuningBullets) do
+        local x,y = v:getPosition()
+        x = x + _bulletSpeed
+        if x > self._range then
+            table.insert(self._StaticBullets,table.remove(self._RuningBullets ,k))
+        end 
+    end 
+   
 	
 end
 
@@ -58,6 +44,17 @@ function Monster:didShot()
         return true
     end
     return false; 
+end
+
+function Monster.update(self)
+    --self:setCurrentHPValue(self:getCurrentHPValue()-1)
+    if(self:getCurrentHPValue()<=0)then
+        self:setAliveState(false)
+        self:hide()
+    end
+    self:shot(self:didShot())
+    self._HPSlider:setValue(self:getCurrentHPValue())
+    self._HPLabel:setString(self:getCurrentHPValue() .. "/" .. self:getTotolHPValue() )
 end
 
 function Monster:createHPSlider()
@@ -102,7 +99,7 @@ function Monster:setAliveState(isAlive)
     self._isAlive = isAlive
 end
 
-function Monster:setAliveState(isAlive)
+function Monster:getAliveState()
     return self._isAlive == isAlive
 end
 
@@ -112,30 +109,13 @@ function Monster:relive()
     self:show()
 end
 
-function Monster.update(self)
-    --self:setCurrentHPValue(self:getCurrentHPValue()-1)
-    if(self:getCurrentHPValue()<=0)then
-        self:setAliveState(false)
-        self:hide()
-    end
-    if(self:didShot()) then
-        self:shot()
-    else
-        for k,v in pairs(self._bullets) do
-            self._isShotting = false
-            v:setPosition(cc.p(self._centerPoint.x/2,self._centerPoint.y/2))
-           v:hide()
-        end
-    end
-    self._HPSlider:setValue(self:getCurrentHPValue())
-    self._HPLabel:setString(self:getCurrentHPValue() .. "/" .. self:getTotolHPValue() )
-end
+
 
 function Monster:createBullets()
     for k=1,self._bulletsAmount do
         local bullet = Bullet:create()
         --bullet:retain()
-        self._bullets[k] = bullet
+        self._StaticBullets[k] = bullet
         bullet:hide()
         self:addChild(bullet)
         bullet:setPosition(self._centerPoint.x/2,self._centerPoint.y/2)
@@ -150,10 +130,11 @@ function Monster:ctor()
     self._isAlive = true --怪物存活状况
     self._HPSlider = nil --血条
     self._HPLabel = nil --数字表示的血量
-    self._bullets = {} -- 子弹
+    self._StaticBullets = {} -- 静止的子弹
+    self._RuningBullets = {} -- 运动的子弹
     self._bulletsAmount = 5 --子弹数量
     self._range = 500   --子弹射程
-    self._bulletSpeed = 8 -- 子弹发射速度
+    self._bulletSpeed = 8 -- 子弹移动速度 像素/帧
     self._isShotting = false --是否正在发送子弹
     self:createBullets()
     self:CreateHPLabel()
