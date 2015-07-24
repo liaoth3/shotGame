@@ -5,9 +5,9 @@ end)
 local Monster = require("Entity.Monster")
 local Player = require("Entity.Player")
 function TMXLayer:create()
-    local map = self.new();
-    map:setName("map")
-    return map
+    local instance = self.new();
+    instance:setName("map")
+    return instance
 end
 function TMXLayer:ctor()
     self._visibleSize = cc.Director:getInstance():getWinSize()

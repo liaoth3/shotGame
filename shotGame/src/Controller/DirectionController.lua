@@ -7,28 +7,28 @@ local TMXLayer = require("Layer.TMXLayer")
 local schduler = cc.Director:getInstance():getScheduler()
 
 function DirectionController:create()
-    local layer = self.new()
-    layer:setName("directionControler")
-    return layer;
+    local instance = self.new()
+    instance:setName("directionControler")
+    return instance;
 end 
 
 function DirectionController:init()
     self:stopMapShaking()
     self:BindOnTouchesEvents()
     local function update()
-        local moveDistance = 40
+        local moveDistance = 2
         math.randomseed(os.time())
         local playerPositionX,playerPositionY = self._TMXLayer:getChildByName("player"):getPosition()
         local children = self._TMXLayer:getChildren()
         for k,v in pairs(children) do
             if string.find(v:getName(),"monster") then
-                local move = cc.MoveBy:create(1,cc.p(math.random(-moveDistance,moveDistance),math.random(-moveDistance,moveDistance)))
-                v:runAction(move)
+                local x , y = v:getPosition()
+                v:setPosition(cc.pAdd(cc.p(x,y),cc.p(math.random(-moveDistance,moveDistance),math.random(-moveDistance,moveDistance))))
             end 
         end 
         --print(playerPositionX,playerPositionY)
     end
-   schduler:scheduleScriptFunc(update,1,false)
+   schduler:scheduleScriptFunc(update,1/60,false)
 end
 function DirectionController:stopMapShaking()
 	local tileTable = self._TMXLayer:getChildren()

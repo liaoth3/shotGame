@@ -14,7 +14,7 @@ function Bullet:show()
     self:setVisible(true)
 end
 
-function Bullet:hdie()
+function Bullet:hide()
     self:setVisible(false)
 end
 

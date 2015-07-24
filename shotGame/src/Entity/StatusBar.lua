@@ -2,9 +2,9 @@ local StatusBar = class("StatusBar",function()
     return cc.Sprite:create()
 end)
 function StatusBar:create()--x,y is the position
-    local sprite = self:new()
-    sprite:setName("StatusBar")
-    return sprite
+    local instance = self:new()
+    instance:setName("StatusBar")
+    return instance
 end
 function StatusBar.update(self)
     self:setCurrentHPValue(self:getCurrentHPValue()-10)
