@@ -29,6 +29,7 @@ end
 function TMXLayer:addPlayer()
     self._player = Player:create()
     self._player:setPosition(cc.p(self._visibleSize.width/2,self._visibleSize.height/2))
+   self._player:setName("player")
     self:addChild(self._player)
 end
 return TMXLayer

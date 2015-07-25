@@ -21,17 +21,49 @@ function Monster:show()
     self:setVisible(true)
 end
 
-function Monster:shot(shoudShot)
+function Monster:shot(shouldShot)
+    
     local intervalWidth = self._range / self._bulletsAmount
-    for k, v in pairs(self._RuningBullets) do
-        local x,y = v:getPosition()
-        x = x + _bulletSpeed
-        if x > self._range then
-            table.insert(self._StaticBullets,table.remove(self._RuningBullets ,k))
-        end 
-    end 
-   
-	
+    
+    local children = self:getChildren()
+    for k,v in pairs(children) do
+        if string.find(v:getName(),"bullet") and v:getRunningState() then
+            local x,y = v:getPosition()
+            x = x + self._bulletSpeed
+            if x >= self._range then
+                v:setPosition(self._centerPoint)
+                v:hide()
+                v:setRunningState(false)
+            else
+                v:setPosition(cc.p(x,y))
+            end
+        end
+    end
+    
+    local min = self._range
+    local isAllStatic = true
+    if shouldShot then 
+        for k,v in pairs(children) do
+            if string.find(v:getName(),"bullet") and v:getRunningState() then
+                local x,y = v:getPosition()
+                min = math.min(min,x)
+                isAllStatic = false
+            end
+        end
+       
+        if min > intervalWidth+self._centerPoint.x or isAllStatic then
+            for k,v in pairs(children) do
+                if string.find(v:getName(),"bullet") and v:getRunningState()==false   then
+                    local x,y = v:getPosition()
+                    v:show()
+                    v:setRunningState(true)
+                    x = x + self._bulletSpeed
+                    v:setPosition(cc.p(x,y))
+                    break
+                end
+            end
+        end
+    end
 end
 
 function Monster:didShot()
@@ -39,15 +71,45 @@ function Monster:didShot()
     local x,y = self:getPosition()
     local x1,y1 = player:getPosition()
     local diff = cc.pSub(cc.p(x,y),cc.p(x1,y1))
-    local distance = math.sqrt(math.pow(diff.x,2),math.pow(diff.y,2))
+    local distance = math.sqrt(math.pow(diff.x,2),math.pow(diff.y,2))    
     if distance < self._attackRadius then
         return true
     end
     return false; 
 end
 
+function Monster:collisionCheck()
+    local function isIntersect(a ,b)
+        --print(a.leftX,a.leftY,a.rightX,a.rightY)
+        --print(b.leftX,b.leftY,b.rightX,b.rightY)
+        if a.rightX <b.leftX or a.leftX > b.rightX  or a.rightY <b.leftY or  a.leftY > b.rightY then
+            return false
+        end
+        return true
+    end
+    local player = self:getParent():getChildByName("player")
+    local playerPositionX,playerPositionY = player:getPosition()
+    local playerSize = player:getContentSize()
+    local selfSize = self:getContentSize()
+    local selfX,selfY = self:getPosition()
+    local selfRect = {leftX=selfX-selfSize.width/2,leftY=selfY-selfSize.height/2,rightX=selfX+selfSize.width/2,rightY=selfY+selfSize.height/2 }
+    local children = player:getChildren()
+    local count = 0
+    for k,v in pairs(children) do
+        if string.find(v:getName(),"bullet") then
+            local x,y = v:getPosition()
+            local size = v:getContentSize()
+            local bulletRect = {leftX=playerPositionX+x-size.width/2,leftY=playerPositionY+y-size.height/2,rightX=playerPositionX+x+size.width/2,rightY=playerPositionY+y+size.height/2 }
+            if isIntersect(selfRect,bulletRect) then
+                self:setCurrentHPValue(self:getCurrentHPValue()-10*player:getPower())
+            end
+        end
+    end
+    --print(count)
+end
+
 function Monster.update(self)
-    --self:setCurrentHPValue(self:getCurrentHPValue()-1)
+    self:collisionCheck()
     if(self:getCurrentHPValue()<=0)then
         self:setAliveState(false)
         self:hide()
@@ -114,27 +176,23 @@ end
 function Monster:createBullets()
     for k=1,self._bulletsAmount do
         local bullet = Bullet:create()
-        --bullet:retain()
-        self._StaticBullets[k] = bullet
-        bullet:hide()
+        bullet:setContentSize(8,5)
+        bullet:setName("bullet" .. k)
         self:addChild(bullet)
-        bullet:setPosition(self._centerPoint.x/2,self._centerPoint.y/2)
+        bullet:setPosition(self._centerPoint)
     end 
 
 end
 function Monster:ctor()
-    self._centerPoint = cc.p(20,40)
-    self._TotolHPValue = 1000 --总血量
+    self._centerPoint = cc.p(10,20)    self._TotolHPValue = 1000 --总血量
     self._CurrentHPValue = 1000--当前血量
     self._attackRadius = 100 --角色在该范围内，怪物会发动攻击
     self._isAlive = true --怪物存活状况
     self._HPSlider = nil --血条
     self._HPLabel = nil --数字表示的血量
-    self._StaticBullets = {} -- 静止的子弹
-    self._RuningBullets = {} -- 运动的子弹
-    self._bulletsAmount = 5 --子弹数量
+    self._bulletsAmount = 10 --子弹数量
     self._range = 500   --子弹射程
-    self._bulletSpeed = 8 -- 子弹移动速度 像素/帧
+    self._bulletSpeed = 5 -- 子弹移动速度 像素/帧
     self._isShotting = false --是否正在发送子弹
     self:createBullets()
     self:CreateHPLabel()

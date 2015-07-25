@@ -88,9 +88,11 @@ function DirectionController:ctor()
     self:addStatusBar()
 end 
 
+
+
 function DirectionController:addStatusBar()
     self._statusBar = StatusBar:create()
-    cc.Sprite:create():getContentSize()
+    self._statusBar:setName("statusBar")
     self._statusBar:setPosition(cc.p(300,cc.Director:getInstance():getWinSize().height-40))
     self:addChild(self._statusBar)
 end

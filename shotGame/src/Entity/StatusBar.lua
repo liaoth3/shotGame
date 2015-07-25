@@ -3,7 +3,6 @@ local StatusBar = class("StatusBar",function()
 end)
 function StatusBar:create()--x,y is the position
     local instance = self:new()
-    instance:setName("StatusBar")
     return instance
 end
 function StatusBar.update(self)
