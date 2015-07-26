@@ -6,4 +6,12 @@ function WinScene:create()
     local scene = self.new()
     return scene
 end
+
+function WinScene:ctor()
+    
+end
+
+function WinScene:init()
+   
+end
 return WinScene

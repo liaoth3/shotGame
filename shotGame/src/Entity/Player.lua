@@ -5,18 +5,36 @@ end)
 local Bullet = require("Entity.Bullet")
 function Player:create()
     local instance = self.new()
-    instance:setScale(0.15)
     return instance
 end
 
+function Player:ctor()
+    self._isAlive = true --存活状况
+    self._centerPoint = cc.p(20,20)    
+    self._totolHPValue = 1000 --总血量
+    self._currentHPValue = 1000--当前血量
+    self._bulletsAmount = 10 --子弹足够
+    self._range = 500   --子弹射程
+    self._bulletSpeed = 5 -- 子弹移动速度 像素/帧
+    self._power = 10 --子弹威力
+    self._moveSpeed = 200 -- 每秒移动多少像素
+    self._scheduler = cc.Director:getInstance():getScheduler()
+
+end
+
 function Player:init()
-    self:collisionCheck()
+    self:createBullets()
     
+    local function update()
+        self:collisionCheck()
+        self:shot(1)
+    end
+    self._scheduler:scheduleScriptFunc(update,1/60,false)
+
 end
 function Player:createBullets()
     for k=1,self._bulletsAmount do
         local bullet = Bullet:create()
-        bullet:setContentSize(8,5)
         bullet:setName("bullet" .. k)
         self:addChild(bullet)
         bullet:setPosition(self._centerPoint)
@@ -24,34 +42,110 @@ function Player:createBullets()
 
 end
 
-function Player:ctor()
-    self._centerPoint = cc.p(10,20)    
-    self._TotolHPValue = 1000 --总血量
-    self._CurrentHPValue = 1000--当前血量
-    self._isAlive = true --存活状况
-    self._bulletsAmount = 10 --子弹足够
-    self._range = 500   --子弹射程
-    self._bulletSpeed = 5 -- 子弹移动速度 像素/帧
-    self._isShotting = false --是否正在发送子弹
-    self._power = 1 --子弹射程
-    self:createBullets()
-    self._scheduler = cc.Director:getInstance():getScheduler()
-    --schedule(self, self.update, 1/60)
-end
+
 function Player:setPower(power)
     self._power = power
 end
 
-function Player:getPower(power)
+function Player:getPower()
     return self._power
 end
 
-function Player:shot()
-    
+
+function Player: getCurrentHPValue ()
+    return self._currentHPValue
 end
 
-function Player:collisionCheck()
+function Player: setCurrentHPValue (value)
+    self._currentHPValue = value
+end
 
+function Player:shot(shotSyle)
+    -- print("shot")
+    local intervalWidth = self._range / self._bulletsAmount
+    local children = self:getChildren()
+    for k,v in pairs(children) do
+        if string.find(v:getName(),"bullet") and v:getRunningState() then
+            local x,y = v:getPosition()
+            x = x + self._bulletSpeed
+            if x >= self._range then
+                v:setPosition(self._centerPoint)
+                v:hide()
+                v:setRunningState(false)
+            else
+                v:setPosition(cc.p(x,y))
+            end
+        end
+    end
+
+    local min = self._range
+    local isAllStatic = true 
+
+    for k,v in pairs(children) do
+        if string.find(v:getName(),"bullet") and v:getRunningState() then
+            local x,y = v:getPosition()
+            min = math.min(min,x)
+            isAllStatic = false
+        end
+    end
+    
+    if min > intervalWidth+self._centerPoint.x or isAllStatic then
+        for k,v in pairs(children) do
+            if string.find(v:getName(),"bullet") and v:getRunningState()==false   then
+                local x,y = v:getPosition()
+                v:show()
+                v:setRunningState(true)
+                x = x + self._bulletSpeed
+                v:setPosition(cc.p(x,y))
+                break
+            end
+        end
+    end
+
+end
+function Player:collisionCheck()
+    local function isIntersect(a ,b)
+       -- print(a.leftX,a.leftY,a.rightX,a.rightY)
+       -- print(b.leftX,b.leftY,b.rightX,b.rightY)
+        if a.rightX <b.leftX or a.leftX > b.rightX  or a.rightY <b.leftY or  a.leftY > b.rightY then
+            return false
+        end
+        return true
+    end
+    local selfX,selfY = self:getPosition()
+    local selfSize = self:getContentSize()
+    local children = self:getParent():getChildren()
+    local selfRect = {leftX=selfX-selfSize.width/2,leftY=selfY-selfSize.height/2,rightX=selfX+selfSize.width/2,rightY=selfY+selfSize.height/2 }
+    for k,v in pairs(children) do
+        if string.find(v:getName(),"monster") then
+            local children_ = v:getChildren()
+            local monsterX,monsterY = v:getPosition()
+            for kk,vv in pairs(children_) do
+                if string.find(vv:getName(),"bullet") then
+                    if vv:getRunningState() then
+                        local x,y = vv:getPosition()
+                        local size = vv:getContentSize()
+                        local rect = {leftX=monsterX+x-size.width/2,leftY=monsterY+y-size.height/2,rightX=monsterX+x+size.width/2,rightY=monsterY+y+size.height/2 }
+                        local isCollision = isIntersect(selfRect,rect)
+                       -- print(isCollision)
+                        if isCollision then
+                            self:setCurrentHPValue(self:getCurrentHPValue()-v:getPower())
+                            
+                        end
+                    end
+
+                end
+            end
+        end
+    end
+end
+
+function Player:setMoveSpeed(speed)
+    self._moveSpeed = speed
+end 
+
+function Player:getMoveSpeed()
+    return self._moveSpeed 
 end
 
 return Player

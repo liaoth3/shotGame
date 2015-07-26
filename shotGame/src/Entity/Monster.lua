@@ -8,11 +8,44 @@ local Bullet = require("Entity.Bullet")
 function Monster:create(name,x,y)--x,y is the position
     local instance = self.new()
     instance:setName(name)
+    instance:setContentSize(27,40)
     instance:setPosition(cc.p(x,y))
-    --self:BindBloodSlider()
     return instance
 end
 
+function Monster:ctor()
+    self._centerPoint = cc.p(10,20)    
+    self._isAlive = true --怪物存活状况
+    self._HPSlider = nil --血条
+    self._HPLabel = nil --数字表示的血量
+    self._totolHPValue = 1000 --总血量
+    self._currentHPValue = 1000--当前血量
+    self._attackRadius = 100 --角色在该范围内，怪物会发动攻击
+    self._bulletsAmount = 10 --子弹数量
+    self._range = 500   --子弹射程
+    self._bulletSpeed = 5 -- 子弹移动速度 像素/帧
+    self._power = 1 --子弹威力
+    self._scheduler = cc.Director:getInstance():getScheduler()
+end
+
+function Monster:init()
+    self:createBullets()
+    self:CreateHPLabel()
+    self:createHPSlider()
+    local function update()
+        self:collisionCheck()
+        if(self:getCurrentHPValue()<=0)then
+            self:setAliveState(false)
+            self._isAlive = false
+            self:hide()
+        end
+        self:shot(self:didShot())
+        self._HPSlider:setValue(self:getCurrentHPValue())
+        self._HPLabel:setString(self:getCurrentHPValue() .. "/" .. self:getTotolHPValue() )
+    end
+    
+    self._scheduler:scheduleScriptFunc(update,1/60,false)
+end
 function Monster:hide()
     self:setVisible(false)
 end
@@ -65,23 +98,8 @@ function Monster:shot(shouldShot)
         end
     end
 end
-
-function Monster:didShot()
-    local player = self:getParent():getChildByName("player")
-    local x,y = self:getPosition()
-    local x1,y1 = player:getPosition()
-    local diff = cc.pSub(cc.p(x,y),cc.p(x1,y1))
-    local distance = math.sqrt(math.pow(diff.x,2),math.pow(diff.y,2))    
-    if distance < self._attackRadius then
-        return true
-    end
-    return false; 
-end
-
 function Monster:collisionCheck()
     local function isIntersect(a ,b)
-        --print(a.leftX,a.leftY,a.rightX,a.rightY)
-        --print(b.leftX,b.leftY,b.rightX,b.rightY)
         if a.rightX <b.leftX or a.leftX > b.rightX  or a.rightY <b.leftY or  a.leftY > b.rightY then
             return false
         end
@@ -102,22 +120,39 @@ function Monster:collisionCheck()
             local bulletRect = {leftX=playerPositionX+x-size.width/2,leftY=playerPositionY+y-size.height/2,rightX=playerPositionX+x+size.width/2,rightY=playerPositionY+y+size.height/2 }
             if isIntersect(selfRect,bulletRect) then
                 self:setCurrentHPValue(self:getCurrentHPValue()-10*player:getPower())
+                --                local moveX = 0
+                --                if bulletRect.leftX < selfRect.leftX then
+                --                    moveX = -50
+                --                else
+                --                    moveX = 50
+                --                end 
+                --                --local moveBy = cc.MoveBy:create(0.2,cc.p(moveX,0))
+                --                local jump = cc.JumpBy:create(2,cc.p(selfX+10,y),10,1)
+                --                local sequence = cc.Sequence:create(jump,nil)
+                --                self:stopALLAction(sequence)
+                --                self:runAction(sequence)
+                --local 
+                --local moveBy = c
             end
         end
     end
-    --print(count)
 end
 
-function Monster.update(self)
-    self:collisionCheck()
-    if(self:getCurrentHPValue()<=0)then
-        self:setAliveState(false)
-        self:hide()
+function Monster:didShot()
+    local player = self:getParent():getChildByName("player")
+    local x,y = self:getPosition()
+    local x1,y1 = player:getPosition()
+    local diff = cc.pSub(cc.p(x,y),cc.p(x1,y1))
+    local distance = math.sqrt(math.pow(diff.x,2),math.pow(diff.y,2))    
+    if distance < self._attackRadius then
+        return true
     end
-    self:shot(self:didShot())
-    self._HPSlider:setValue(self:getCurrentHPValue())
-    self._HPLabel:setString(self:getCurrentHPValue() .. "/" .. self:getTotolHPValue() )
+    return false; 
 end
+
+
+
+
 
 function Monster:createHPSlider()
     self._HPSlider = cc.ControlSlider:create(cc.Sprite:create("../res/backGround.png"),cc.Sprite:create("../res/progress.png"),cc.Sprite:create("../res/sliderThumb.png"))
@@ -142,19 +177,19 @@ function Monster:CreateHPLabel()
 end
 
 function Monster: getCurrentHPValue ()
-    return self._CurrentHPValue
+    return self._currentHPValue
 end
 
 function Monster:getTotolHPValue()
-	return self._TotolHPValue
+	return self._totolHPValue
 end
 
 function Monster: setCurrentHPValue (value)
-    self._CurrentHPValue = value
+    self._currentHPValue = value
 end
 
 function Monster:setTotolHPValue(value)
-    self._TotolHPValue = value
+    self._totolHPValue = value
 end
 
 function Monster:setAliveState(isAlive)
@@ -162,7 +197,7 @@ function Monster:setAliveState(isAlive)
 end
 
 function Monster:getAliveState()
-    return self._isAlive == isAlive
+    return self._isAlive
 end
 
 function Monster:relive()
@@ -171,34 +206,23 @@ function Monster:relive()
     self:show()
 end
 
-
-
 function Monster:createBullets()
     for k=1,self._bulletsAmount do
         local bullet = Bullet:create()
-        bullet:setContentSize(8,5)
+        
         bullet:setName("bullet" .. k)
         self:addChild(bullet)
         bullet:setPosition(self._centerPoint)
     end 
 
 end
-function Monster:ctor()
-    self._centerPoint = cc.p(10,20)    self._TotolHPValue = 1000 --总血量
-    self._CurrentHPValue = 1000--当前血量
-    self._attackRadius = 100 --角色在该范围内，怪物会发动攻击
-    self._isAlive = true --怪物存活状况
-    self._HPSlider = nil --血条
-    self._HPLabel = nil --数字表示的血量
-    self._bulletsAmount = 10 --子弹数量
-    self._range = 500   --子弹射程
-    self._bulletSpeed = 5 -- 子弹移动速度 像素/帧
-    self._isShotting = false --是否正在发送子弹
-    self:createBullets()
-    self:CreateHPLabel()
-    self:createHPSlider()
-    self._scheduler = cc.Director:getInstance():getScheduler()
-    schedule(self, self.update, 1/60)
+function Monster:setPower(power)
+    self._power = power
 end
+
+function Monster:getPower()
+    return self._power
+end
+
 
 return Monster

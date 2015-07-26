@@ -1,15 +1,21 @@
 local Bullet = class(
 	"Bullet", function () return cc.Sprite:create("../res/bullet.png") end 
 )
+local config = require("inc.readConfig")
+function Bullet.create()
+    local instance = Bullet.new()
+    instance:setContentSize(8,5)
+    return instance
+end
+
 function Bullet:ctor()  
     self._isRunning = false
 end
 
-function Bullet.create()
-	local instance = Bullet.new()
-	return instance
+function Bullet:init()
+	
 end
-
+	
 function Bullet:show()
     self:setVisible(true)
 end
@@ -26,9 +32,4 @@ function Bullet:getRunningState()
     return self._isRunning
 end
 
-
-function Bullet:init()
-	
-end
-	
 return Bullet

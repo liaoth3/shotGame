@@ -1,0 +1,28 @@
+{
+  "Bullet": {
+    "_totolHPValue" : 1000
+    "_currentHPValue":1000,
+    "_attackRadius":100,
+    "_bulletsAmount":10,
+    "_range":500,
+    "_bulletSpeed":5,
+    "_power":1
+  },
+  "Player": {
+    "_totolHPValue" : 1000,
+    "_currentHPValue":1000,
+    "_bulletsAmount":10,
+    "_range":500,
+    "_bulletSpeed":5,
+    "_power":10,
+    "_moveSpeed":200
+  },
+  "StatusBar": {
+    "_totolHPValue" : 1000,
+    "_currentHPValue":1000
+  },
+  "TMXLayer": {
+    "_monsterAmount" : 20
+  }
+
+}

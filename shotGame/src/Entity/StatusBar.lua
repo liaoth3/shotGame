@@ -5,38 +5,39 @@ function StatusBar:create()--x,y is the position
     local instance = self:new()
     return instance
 end
-function StatusBar.update(self)
-    self:setCurrentHPValue(self:getCurrentHPValue()-10)
-    self._HPSlider:setValue(self:getCurrentHPValue())
-    self._HPLabel:setString(self:getCurrentHPValue() .. "/" .. self:getTotolHPValue() )
-end
+
+function StatusBar:ctor()--x,y is the position
+    self._currentHPValue = 1000
+    self._totolHPValue = 1000
+    self._HPSlider = nil --血条
+    self._HPLabel = nil --数字表示的血量
+end 
+
+function StatusBar:init()--x,y is the position
+    self:CreateHPLabel()
+    self:createHPSlider()
+end 
 
 function StatusBar: getCurrentHPValue ()
-    return self._CurrentHPValue
+    return self._currentHPValue
 end
 
 function StatusBar:getTotolHPValue()
-    return self._TotolHPValue
+    return self._totolHPValue
 end
 
 function StatusBar: setCurrentHPValue (value)
-    self._CurrentHPValue = value
+    self._currentHPValue = value
 end
 
 function StatusBar:setTotolHPValue(value)
-    self._TotolHPValue = value
+    self._totolHPValue = value
 end
 
+function StatusBar:setLabelHPValue(value)
+    self._HPLabel:setString(value .. "/" .. self:getTotolHPValue())
+end
 
-function StatusBar:ctor()--x,y is the position
-    self._TotolHPValue = 1000 --总血量
-    self._CurrentHPValue = 1000--当前血量
-    self._HPSlider = nil --血条
-    self._HPLabel = nil --数字表示的血量
-    self:CreateHPLabel()
-    self:createHPSlider()
-    schedule(self, self.update, 1)
-end 
 function StatusBar:createHPSlider()
     self._HPSlider = cc.ControlSlider:create(cc.Sprite:create("../res/backGround.png"),cc.Sprite:create("../res/progress.png"),cc.Sprite:create("../res/sliderThumb.png"))
     self:addChild(self._HPSlider)
@@ -56,7 +57,7 @@ function StatusBar:CreateHPLabel()
     self:addChild(self._HPLabel)
     self._HPLabel:setScale( 0.4)
     --self._HPLabel:setContentSize(300,0)
-    self._HPLabel:setString(self:getCurrentHPValue() .. "/" .. self:getTotolHPValue())
+    self:setLabelHPValue(self:getTotolHPValue())
     self._HPLabel:setColor(cc.c3b(0,0,0))
     self._HPLabel:setPosition(cc.p(-70,0))
 end

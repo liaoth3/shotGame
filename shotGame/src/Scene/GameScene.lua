@@ -6,9 +6,18 @@ local TmxLayer = require("Layer.TMXLayer")
 local DirectionController = require("Controller.DirectionController")
 function GameScene:create()
     local scene = self.new()
-    local directionController = DirectionController:create()
-    scene:addChild(directionController)
-    directionController:init()
     return scene
 end
+
+function GameScene:ctor()
+   
+end
+
+function GameScene:init()
+    local directionController = DirectionController:create()
+    directionController:init()
+    self:addChild(directionController)
+    
+end
+
 return GameScene
