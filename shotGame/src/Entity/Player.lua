@@ -3,6 +3,7 @@ local Player = class("Player",function()
     return cc.Sprite:create("../res/shizi.jpg")
 end)
 local Bullet = require("Entity.Bullet")
+local config = require("inc.readConfig")
 function Player:create()
     local instance = self.new()
     return instance
@@ -11,13 +12,13 @@ end
 function Player:ctor()
     self._isAlive = true --存活状况
     self._centerPoint = cc.p(20,20)    
-    self._totolHPValue = 1000 --总血量
-    self._currentHPValue = 1000--当前血量
-    self._bulletsAmount = 10 --子弹足够
-    self._range = 500   --子弹射程
-    self._bulletSpeed = 5 -- 子弹移动速度 像素/帧
-    self._power = 10 --子弹威力
-    self._moveSpeed = 200 -- 每秒移动多少像素
+    self._totolHPValue = config["Player"]["_totolHPValue"] --总血量
+    self._currentHPValue = config["Player"]["_currentHPValue"]--当前血量
+    self._bulletsAmount = config["Player"]["_bulletsAmount"] --子弹足够
+    self._range = config["Player"]["_range"]   --子弹射程
+    self._bulletSpeed = config["Player"]["_bulletSpeed"] -- 子弹移动速度 像素/帧
+    self._power = config["Player"]["_power"] --子弹威力
+    self._moveSpeed = config["Player"]["_moveSpeed"] -- 每秒移动多少像素
     self._scheduler = cc.Director:getInstance():getScheduler()
 
 end

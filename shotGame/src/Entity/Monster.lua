@@ -4,7 +4,7 @@ local Monster = class("Monster",function()
 end)
 
 local Bullet = require("Entity.Bullet")
-
+local config = require("inc.readConfig")
 function Monster:create(name,x,y)--x,y is the position
     local instance = self.new()
     instance:setName(name)
@@ -18,13 +18,13 @@ function Monster:ctor()
     self._isAlive = true --怪物存活状况
     self._HPSlider = nil --血条
     self._HPLabel = nil --数字表示的血量
-    self._totolHPValue = 1000 --总血量
-    self._currentHPValue = 1000--当前血量
-    self._attackRadius = 100 --角色在该范围内，怪物会发动攻击
-    self._bulletsAmount = 10 --子弹数量
-    self._range = 500   --子弹射程
-    self._bulletSpeed = 5 -- 子弹移动速度 像素/帧
-    self._power = 1 --子弹威力
+    self._totolHPValue = config["Monster"]["_totolHPValue"] --总血量
+    self._currentHPValue = config["Monster"]["_currentHPValue"]--当前血量
+    self._attackRadius = config["Monster"]["_attackRadius"] --角色在该范围内，怪物会发动攻击
+    self._bulletsAmount = config["Monster"]["_bulletsAmount"] --子弹数量
+    self._range = config["Monster"]["_range"]   --子弹射程
+    self._bulletSpeed = config["Monster"]["_bulletSpeed"] -- 子弹移动速度 像素/帧
+    self._power = config["Monster"]["_power"] --子弹威力
     self._scheduler = cc.Director:getInstance():getScheduler()
 end
 
@@ -34,9 +34,9 @@ function Monster:init()
     self:createHPSlider()
     local function update()
         self:collisionCheck()
-        if(self:getCurrentHPValue()<=0)then
+        if(self:getCurrentHPValue()<=0 and self:getAliveState())then
             self:setAliveState(false)
-            self._isAlive = false
+            self:getParent():getParent():getChildByName("statusBar"):setDiedMonsterAmount(1)
             self:hide()
         end
         self:shot(self:didShot())
@@ -119,20 +119,7 @@ function Monster:collisionCheck()
             local size = v:getContentSize()
             local bulletRect = {leftX=playerPositionX+x-size.width/2,leftY=playerPositionY+y-size.height/2,rightX=playerPositionX+x+size.width/2,rightY=playerPositionY+y+size.height/2 }
             if isIntersect(selfRect,bulletRect) then
-                self:setCurrentHPValue(self:getCurrentHPValue()-10*player:getPower())
-                --                local moveX = 0
-                --                if bulletRect.leftX < selfRect.leftX then
-                --                    moveX = -50
-                --                else
-                --                    moveX = 50
-                --                end 
-                --                --local moveBy = cc.MoveBy:create(0.2,cc.p(moveX,0))
-                --                local jump = cc.JumpBy:create(2,cc.p(selfX+10,y),10,1)
-                --                local sequence = cc.Sequence:create(jump,nil)
-                --                self:stopALLAction(sequence)
-                --                self:runAction(sequence)
-                --local 
-                --local moveBy = c
+                self:setCurrentHPValue(self:getCurrentHPValue()-player:getPower())
             end
         end
     end

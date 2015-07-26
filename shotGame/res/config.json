@@ -1,62 +1,32 @@
 {
-  "init_cfg": {
-    "isLandscape": true,
-    "isWindowTop": false,
-    "name": "CocosLuaGame",
-    "width": 960,
-    "height": 640,
-    "entry": "src/main.lua",
-    "consolePort": 6010,
-    "uploadPort": 6020,
-    "debugPort": 10000,
-    "forwardConsolePort": 10089,
-    "forwardUploadPort": 10091
+  "Monster": {
+    "_totolHPValue" : 1000
+    "_currentHPValue":1000,
+    "_attackRadius":100,
+    "_bulletsAmount":3,
+    "_range":500,
+    "_bulletSpeed":5,
+    "_power":100
   },
-  "simulator_screen_size": [
-    {
-      "title": "iPhone 3Gs (480x320)",
-      "width": 480,
-      "height": 320
-    },
-    {
-      "title": "iPhone 4 (960x640)",
-      "width": 960,
-      "height": 640
-    },
-    {
-      "title": "iPhone 5 (1136x640)",
-      "width": 1136,
-      "height": 640
-    },
-    {
-      "title": "iPad (1024x768)",
-      "width": 1024,
-      "height": 768
-    },
-    {
-      "title": "iPad Retina (2048x1536)",
-      "width": 2048,
-      "height": 1536
-    },
-    {
-      "title": "Android (800x480)",
-      "width": 800,
-      "height": 480
-    },
-    {
-      "title": "Android (854x480)",
-      "width": 854,
-      "height": 480
-    },
-    {
-      "title": "Android (1280x720)",
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "title": "Android (1920x1080)",
-      "width": 1920,
-      "height": 1080
-    }
-  ]
+  "Player": {
+    "_totolHPValue" : 1000,
+    "_currentHPValue":1000,
+    "_bulletsAmount":10,
+    "_range":500,
+    "_bulletSpeed":5,
+    "_power":100,
+    "_moveSpeed":200
+  },
+  "StatusBar": {
+    "_totolHPValue" : 1000,
+    "_currentHPValue":1000,
+    
+    "_initMonsterAmount":10,
+    "_totolMosterAmount":30,
+    "_totolTime":600  
+  },
+  "TMXLayer": {
+    "_monsterAmount" : 20
+  }
+
 }

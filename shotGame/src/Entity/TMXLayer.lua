@@ -4,6 +4,7 @@ local TMXLayer = class("TMXLayer",function()
 end)
 local Monster = require("Entity.Monster")
 local Player = require("Entity.Player")
+local config = require("inc.readConfig")
 function TMXLayer:create()
     local instance = self.new();
     return instance
@@ -11,12 +12,22 @@ end
 function TMXLayer:ctor()
     self._visibleSize = cc.Director:getInstance():getWinSize()
     self._player = nil
-    self._monsterAmount = 20
+    self._monsterAmount = config["StatusBar"]["_initMonsterAmount"]
 end
 
 function TMXLayer:init()
     self:addPlayer()
     self:generatorMonster()
+end
+
+function TMXLayer:reLiveALLMonster()
+    local children = self:getChildren()
+    for k,v in pairs(children) do
+        if string.find(v:getName(),"monster") then
+            v:setPosition(cc.p(math.random(self._visibleSize.width),math.random(self._visibleSize.height)))
+            v:relive()
+        end
+    end    
 end
 
 function TMXLayer:generatorMonster()

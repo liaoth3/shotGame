@@ -3,7 +3,7 @@ local DirectionController = class("DirectionController",function()
 end)
 
 local StatusBar = require("Entity.StatusBar")
-local TMXLayer = require("Layer.TMXLayer")
+local TMXLayer = require("Entity.TMXLayer")
 local schduler = cc.Director:getInstance():getScheduler()
 
 function DirectionController:create()
@@ -15,7 +15,7 @@ function DirectionController:ctor()
     self._scheduler = cc.Director:getInstance():getScheduler()
     self._player = nil
     self._statusBar = nil
-    
+    self._reliveCount = 0
 end 
 function DirectionController:init()
     self:addTMXLayer()
@@ -27,15 +27,38 @@ function DirectionController:init()
         local statusBar = self:getChildByName("statusBar")
         local player = self:getChildByName("map"):getChildByName("player")
         statusBar:setCurrentHPValue(player:getCurrentHPValue())
-        statusBar:setLabelHPValue(player:getCurrentHPValue())
-        if statusBar:getCurrentHPValue() <= 0 then
-            local winScene = require("Scene.WinScene")
+        statusBar:showUsedTime()
+        if statusBar:getCurrentHPValue() <= 0 or statusBar:getUsedTime()>=statusBar:getTotolTime() then
+            local LoseScene = require("Scene.LoseScene")
+            local loseScene = LoseScene:create()
+            loseScene:init()
+            cc.Director:getInstance():pause()
+            if cc.Director:getInstance():getRunningScene() then
+                cc.Director:getInstance():replaceScene(loseScene)
+            else
+                cc.Director:getInstance():runWithScene(loseScene)
+            end
+        end
+        print(statusBar:getDiedMonsterAmount(),statusBar:getTotolMosterAmount())
+        if statusBar:getDiedMonsterAmount()>= statusBar:getTotolMosterAmount() then
+            local WinScene = require("Scene.WinScene")
+            local winScene = WinScene:create()
+            winScene:init()
+            cc.Director:getInstance():pause()
             if cc.Director:getInstance():getRunningScene() then
                 cc.Director:getInstance():replaceScene(winScene)
             else
                 cc.Director:getInstance():runWithScene(winScene)
             end
         end
+        if statusBar:getDiedMonsterAmount() > 0  and statusBar:getDiedMonsterAmount()< statusBar:getTotolMosterAmount()and statusBar:getDiedMonsterAmount() % statusBar:getInitMonsterAmount()==0 then
+            if self._reliveCount < statusBar:getDiedMonsterAmount() / statusBar:getInitMonsterAmount() then
+                self._reliveCount = self._reliveCount + 1
+                self._TMXLayer:reLiveALLMonster()
+            end
+        end
+        
+        
         math.randomseed(os.time())
         local playerPositionX,playerPositionY = self._TMXLayer:getChildByName("player"):getPosition()
         local children = self._TMXLayer:getChildren()

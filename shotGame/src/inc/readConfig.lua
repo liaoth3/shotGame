@@ -1,4 +1,4 @@
-local file = io.lines("../../res/test.json")
+local file = io.lines("../../res/config.json")
 local str = ""
 while true do
     local f = file()

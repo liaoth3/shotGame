@@ -1,7 +1,7 @@
 local Bullet = class(
 	"Bullet", function () return cc.Sprite:create("../res/bullet.png") end 
 )
-local config = require("inc.readConfig")
+
 function Bullet.create()
     local instance = Bullet.new()
     instance:setContentSize(8,5)
